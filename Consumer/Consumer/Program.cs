@@ -19,7 +19,7 @@ using IModel channel = connection.CreateModel();
 /*
     publisher'daki ile birebir aynı yapılandırmada tanımlanmalıdır.
 */
-channel.QueueDeclare(queue: "example-queue", exclusive: false);
+channel.QueueDeclare(queue: "example-queue", exclusive: false, durable: true);
 
 
 // Read Message From Queue

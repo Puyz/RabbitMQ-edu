@@ -17,8 +17,9 @@ using IModel channel = connection.CreateModel();
 // Create Queue 
 /*
     exclusive: eğer true olursa başka bağlantı ile bu kuyruğa (başka channel'dan) ulaşamayız. Consumer ile tüketeceğimiz için false olması gerekiyor.
-*/
-channel.QueueDeclare(queue: "example-queue", exclusive: false);
+    durable: kuyruğun kalıcılık durumu
+ */
+channel.QueueDeclare(queue: "example-queue", exclusive: false, durable: true);
 
 
 // Send Message to Queue
@@ -30,11 +31,15 @@ channel.QueueDeclare(queue: "example-queue", exclusive: false);
     * direct exchange'de routing key, kuyruk ismine denk geliyor.
 */
 
+// Mesajları kalıcı olarak ayarladık.
+IBasicProperties properties = channel.CreateBasicProperties();
+properties.Persistent = true;
+
 for (int i = 0; i < 5; i++)
 {
     await Task.Delay(2000);
     byte[] message = Encoding.UTF8.GetBytes("test message " + i);
-    channel.BasicPublish(exchange: "", routingKey: "example-queue", body: message);
+    channel.BasicPublish(exchange: "", routingKey: "example-queue", body: message, basicProperties: properties);
 }
 
 
