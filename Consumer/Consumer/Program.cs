@@ -30,6 +30,16 @@ channel.QueueDeclare(queue: "example-queue", exclusive: false, durable: true);
 EventingBasicConsumer consumer = new(channel);
 channel.BasicConsume(queue: "example-queue", autoAck: false, consumer);
 
+/* 
+    BasicQos: Mesajların işleme hızının ve teslimet sırasını belirleyebiliriz. 
+    Böylece Fair Dispatch özelliği konfigüre edilebilmektedir.
+
+    * prefetchSize: Bir consumer tarafından en büyük mesaj boyutunu byte cinsinden belirler. 0, sınırsız demektir.
+    * prefetchCount: Bir consumer tarafından aynı anda işleme alınabilecek mesaj sayısını belirler.
+    * global: Bu konfigürasyonun tüö consumer'lar için mi yoksa sadece çağrı yapılan consumer için mi geçerli olacağını belirler.
+*/
+channel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
+
 consumer.Received += (sender, e) =>
 {
     // kuyruğa gelen mesajın işlendiği yerdir.
