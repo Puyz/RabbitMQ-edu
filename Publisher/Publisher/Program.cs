@@ -5,7 +5,7 @@ using System.Text;
 // Create Connection
 ConnectionFactory factory = new()
 {
-    Uri = new("")
+    Uri = new("amqps")
 };
 
 
@@ -30,9 +30,10 @@ channel.QueueDeclare(queue: "example-queue", exclusive: false);
     * direct exchange'de routing key, kuyruk ismine denk geliyor.
 */
 
-for (int i = 0; i < 120; i++)
+for (int i = 0; i < 5; i++)
 {
-    byte[] message = Encoding.UTF8.GetBytes("test message "+ i);
+    await Task.Delay(2000);
+    byte[] message = Encoding.UTF8.GetBytes("test message " + i);
     channel.BasicPublish(exchange: "", routingKey: "example-queue", body: message);
 }
 
