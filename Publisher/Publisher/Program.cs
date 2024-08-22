@@ -13,16 +13,19 @@ ConnectionFactory factory = new()
 using IConnection connection = factory.CreateConnection();
 using IModel channel = connection.CreateModel();
 
+channel.ExchangeDeclare(exchange: "topic-exchange-edu", type: ExchangeType.Topic);
 
-// Create Exchange
-channel.ExchangeDeclare(exchange: "fanout-exchange-edu",type: ExchangeType.Fanout, durable: false, autoDelete: false);
+Console.Write("Topic belirleniyiz: ");
+string topics = Console.ReadLine()!;
 
-
-// fanout exchange'de bind olmuş tüm kuyruklara göndereceğimiz için routing key kullanmıyoruz.
 while (true)
 {
-    Console.Write("Mesaj: ");
+    Console.Write("Mesaj yazınız: ");
     string message = Console.ReadLine()!;
-    byte[] byteMessage = Encoding.UTF8.GetBytes(message);
-    channel.BasicPublish(exchange: "fanout-exchange-edu", routingKey: string.Empty, body: byteMessage);
+    channel.BasicPublish
+        (
+            exchange: "topic-exchange-edu",
+            routingKey: topics,
+            body: Encoding.UTF8.GetBytes(message)
+        );
 }

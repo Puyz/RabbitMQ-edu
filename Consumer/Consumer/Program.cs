@@ -14,21 +14,29 @@ ConnectionFactory factory = new()
 using IConnection connection = factory.CreateConnection();
 using IModel channel = connection.CreateModel();
 
-channel.ExchangeDeclare(exchange: "fanout-exchange-edu", type: ExchangeType.Fanout, durable: false, autoDelete: false);
+channel.ExchangeDeclare(exchange: "topic-exchange-edu", type: ExchangeType.Topic);
 
-Console.Write("Kuyruk adı giriniz: ");
-string queueName = Console.ReadLine()!;
+Console.Write("Abone olacağınız topic'in adını yazınız: ");
+string topics = Console.ReadLine()!;
+string queueName = channel.QueueDeclare().QueueName;
 
-channel.QueueDeclare(queue: queueName, exclusive: false);
 
-channel.QueueBind(queue: queueName, exchange: "fanout-exchange-edu", routingKey: string.Empty);
+channel.QueueBind
+    (
+        queue: queueName,
+        exchange: "topic-exchange-edu",
+        routingKey: topics
+    );
 
 EventingBasicConsumer consumer = new(channel);
 channel.BasicConsume(queue: queueName, autoAck: true, consumer: consumer);
 
-consumer.Received += (sender, e) =>
+
+consumer.Received += (sender ,e) =>
 {
     Console.WriteLine(Encoding.UTF8.GetString(e.Body.Span));
 };
+
+
 
 Console.Read();
