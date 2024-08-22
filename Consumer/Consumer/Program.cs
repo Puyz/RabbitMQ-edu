@@ -14,60 +14,37 @@ ConnectionFactory factory = new()
 using IConnection connection = factory.CreateConnection();
 using IModel channel = connection.CreateModel();
 
+// 1.Adım
+channel.ExchangeDeclare(exchange: "direct-exchange-edu", type: ExchangeType.Direct, durable: false, autoDelete: false);
 
-// Create Queue 
-/*
-    publisher'daki ile birebir aynı yapılandırmada tanımlanmalıdır.
-*/
-channel.QueueDeclare(queue: "example-queue", exclusive: false, durable: true);
+// 2.Adım
+string queueName = channel.QueueDeclare().QueueName;
+
+// 3.Adım
+channel.QueueBind(queue: queueName, exchange: "direct-exchange-edu", routingKey: "direct-queue-edu");
 
 
-// Read Message From Queue
-/*
-    Ack(Acknowledgement: onay)
-    autoAck: kuyruktan mesaj okunduğunda silinip silinmemesi (otomatik onaylanması)
-*/
+
 EventingBasicConsumer consumer = new(channel);
-channel.BasicConsume(queue: "example-queue", autoAck: false, consumer);
-
-/* 
-    BasicQos: Mesajların işleme hızının ve teslimet sırasını belirleyebiliriz. 
-    Böylece Fair Dispatch özelliği konfigüre edilebilmektedir.
-
-    * prefetchSize: Bir consumer tarafından en büyük mesaj boyutunu byte cinsinden belirler. 0, sınırsız demektir.
-    * prefetchCount: Bir consumer tarafından aynı anda işleme alınabilecek mesaj sayısını belirler.
-    * global: Bu konfigürasyonun tüö consumer'lar için mi yoksa sadece çağrı yapılan consumer için mi geçerli olacağını belirler.
-*/
-channel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
+channel.BasicConsume(queue: queueName, autoAck: true, consumer: consumer);
 
 consumer.Received += (sender, e) =>
 {
-    // kuyruğa gelen mesajın işlendiği yerdir.
-    /* 
-        args.Body: kuyruktaki mesajın verisini bütünsel olarak getirir.
-        args.Body.Span veya args.Body.ToArray(): kuyruktaki mesajın byte verisini getirir.
-    */
     Console.WriteLine(Encoding.UTF8.GetString(e.Body.Span));
-
-    /* 
-        multiple: birden fazla mesaja dair onay bildirisi gönderir.
-        Eğer true verilirse DeliveryTag değerine sahip olan bu mesajla birlikte bundan önceki 
-        mesajlarında işlendiğini onaylar. Aksi taktirde false verilirse sadece bu mesaj için
-        onay bildirisinde bulunacaktır.
-    */
-
-    channel.BasicAck(deliveryTag: e.DeliveryTag, multiple: false);
-
-
-    // Eğer işlem sırasında hata meydana gelirse ve bu işlemin onaylanmadığını kuyruğa bildirmemiz gerekir.
-    /* 
-        requeue: Bu parametre, bu consumer tarafından işlenemeyeceği ifade edilen bu mesajın
-        tekrardan kuyruğa eklenip eklenmemesinin kararını vermektedir. 
-        * True değeri verilirse mesaj kuyruğa tekrardan işlenmek üzere eklenir. 
-        * False değeri verilirse mesaj kuyruğa eklenmeyerek silinecektir.
-     */
-
-    //channel.BasicNack(deliveryTag: e.DeliveryTag, multiple: false, requeue: true);
 };
 
 Console.Read();
+
+
+/*
+    1.adım: Publisher'da ki exchange ile birebir ayın isim ve type' a sahi pbir exchange tanımlanmalıdır.
+
+    2.adım: Publisher tarafından routing key'de bulunan değerdeki kuyruğa gönderilen mesajları kendi oluşturduğumuz
+    kuyruğa yönlendirerek tüketmemiz gerekmektedir. Bunun için öncelikle bir kuyruk oluşturulmalıdır.
+
+    3.adım: Publisher tarafından gönderilen mesajı consume edebilmek için oluşturduğumuz bu rastgele kuyruğu
+    routing key ile bağlamamız gerekiyor.
+ 
+ 
+ 
+*/

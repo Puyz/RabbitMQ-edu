@@ -14,33 +14,15 @@ using IConnection connection = factory.CreateConnection();
 using IModel channel = connection.CreateModel();
 
 
-// Create Queue 
-/*
-    exclusive: eğer true olursa başka bağlantı ile bu kuyruğa (başka channel'dan) ulaşamayız. Consumer ile tüketeceğimiz için false olması gerekiyor.
-    durable: kuyruğun kalıcılık durumu
- */
-channel.QueueDeclare(queue: "example-queue", exclusive: false, durable: true);
+// Create Exchange
+channel.ExchangeDeclare(exchange: "direct-exchange-edu",type: ExchangeType.Direct, durable: false, autoDelete: false);
 
 
-// Send Message to Queue
-/*
-    RabbitMQ kuyruğa atacağı mesajları byte türünden kabul etmektedir. 
-    
-    BasicPublish: 
-    * exchange belirtmezsek default olarak direct seçili olur.
-    * direct exchange'de routing key, kuyruk ismine denk geliyor.
-*/
-
-// Mesajları kalıcı olarak ayarladık.
-IBasicProperties properties = channel.CreateBasicProperties();
-properties.Persistent = true;
-
-for (int i = 0; i < 5; i++)
+// direct exchange olduğu için mesajın hangi kuyruğa gideceğini routuingKey ile bildiriyoruz.
+while (true)
 {
-    await Task.Delay(2000);
-    byte[] message = Encoding.UTF8.GetBytes("test message " + i);
-    channel.BasicPublish(exchange: "", routingKey: "example-queue", body: message, basicProperties: properties);
+    Console.Write("Mesaj: ");
+    string message = Console.ReadLine()!;
+    byte[] byteMessage = Encoding.UTF8.GetBytes(message);
+    channel.BasicPublish(exchange: "direct-exchange-edu", routingKey: "direct-queue-edu", body: byteMessage);
 }
-
-
-Console.Read();
