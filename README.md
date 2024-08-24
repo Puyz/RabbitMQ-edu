@@ -7,14 +7,21 @@
 ## Exchange Türleri
 
 ### Direct Exchange
-- Mesajların direkt olarak belirli bir kuyruğa gönderilmesini sağlayan exchange'dir.
+Mesajların direkt olarak belirli bir kuyruğa gönderilmesini sağlayan exchange'dir.
 
 ### Fanout Exchange
-- Mesajların, bu exchange'e bind olmuş olan tüm kuyruklara gönderilmesini sağlar. Publisher mesajların gönderildiği kuyruk isimlerini dikkate almaz ve mesajları tüm kuyruklara gönderir.
+Mesajların, bu exchange'e bind olmuş olan tüm kuyruklara gönderilmesini sağlar. Publisher mesajların gönderildiği kuyruk isimlerini dikkate almaz ve mesajları tüm kuyruklara gönderir.
 
 ### Topic Exchange
-- Routing key'leri kullanarak mesajları kuyruklara yönlendirmek için kullanılan bir exchange'dir. Bu exchange ile routing key'in bir kısmına, keylere göre kuyruklara mesaj gönderilir. Kuyruklar da, routing key'e göre bu exchange'e abone olabilir ve sadece ilgili routing key'e göre gönderilen mesajları alabilirler.
+Routing key'leri kullanarak mesajları kuyruklara yönlendirmek için kullanılan bir exchange'dir. Bu exchange ile routing key'in bir kısmına, keylere göre kuyruklara mesaj gönderilir. Kuyruklar da, routing key'e göre bu exchange'e abone olabilir ve sadece ilgili routing key'e göre gönderilen mesajları alabilirler.
 
 **Topic formatı**
-- \*, o alanda herhangi bir şey olabilir. (\*.\*.fast)
-- #, başında veya sonunda herhangi bişiler olabilir. (#.fast)
+- \*, o alanda herhangi bir key olabilir. (\*.\*.fast)
+- #, başında veya sonunda herhangi bir key(ler) olabilir. (#.fast)
+
+### Headers Exchange
+Routing key yerine header'ları kullanarak mesajları kuyruklara yönlendirmek için kullanılan exchange'dir.
+
+**x-match:** İlgili queue'nun mesajı hangi davranışla alacağının kararını veren bir key'dir. (Varsayılan olarak **any** kabul edilir.)
+- **any:** İlgili queue'nun sadece tek bir key-value değerinin eşleşmesi neticesinde mesajı alacağını ifade eder.
+- **all:** İlgili queue'nun tüm key-value değerlerindeki verilerin eşleşmesi neticesinde mesajı alacağını ifade eder.
