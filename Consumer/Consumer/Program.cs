@@ -6,7 +6,7 @@ using System.Text;
 // Create Connection
 ConnectionFactory factory = new()
 {
-    Uri = new("amqps://vjcgcjyw:P6xIHsPMCeaHQlssHGMswxD1nJSXfSHo@toad.rmq.cloudamqp.com/vjcgcjyw")
+    Uri = new("amqps")
 };
 
 using IConnection connection = factory.CreateConnection();
