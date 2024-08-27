@@ -78,56 +78,56 @@ using IModel channel = connection.CreateModel();
 #endregion
 
 #region Request/Response Tasarımı
-string requestQueueName = "example-request-response";
-channel.QueueDeclare(queue: requestQueueName, durable: false, exclusive: false, autoDelete: false);
+//string requestQueueName = "example-request-response";
+//channel.QueueDeclare(queue: requestQueueName, durable: false, exclusive: false, autoDelete: false);
 
-// Consumer'dan dönecek olan sonucu elde edeceğimiz kuyruğun adını tanımlıyoruz.
-string responseQueueName = channel.QueueDeclare().QueueName;
+//// Consumer'dan dönecek olan sonucu elde edeceğimiz kuyruğun adını tanımlıyoruz.
+//string responseQueueName = channel.QueueDeclare().QueueName;
 
-// Gönderilen mesajı ifade eden bir korelasyon değeri oluşturuyoruz.
-string correlationId = Guid.NewGuid().ToString();
+//// Gönderilen mesajı ifade eden bir korelasyon değeri oluşturuyoruz.
+//string correlationId = Guid.NewGuid().ToString();
 
 
-#region Request Mesajını Oluşturma Ve Gönderme
+//#region Request Mesajını Oluşturma Ve Gönderme
 
-IBasicProperties basicProperties = channel.CreateBasicProperties();
+//IBasicProperties basicProperties = channel.CreateBasicProperties();
 
-//Bu kolerasyon değerini ilgili mesajla consumer'a gönderiyoruz.
-basicProperties.CorrelationId = correlationId;
+////Bu kolerasyon değerini ilgili mesajla consumer'a gönderiyoruz.
+//basicProperties.CorrelationId = correlationId;
 
-//Bir yandan da mesajın ReplyTo özelliğine dönüş kuyruğunun adını yazıp consumer'a gönderiyoruz.
-basicProperties.ReplyTo = responseQueueName;
+////Bir yandan da mesajın ReplyTo özelliğine dönüş kuyruğunun adını yazıp consumer'a gönderiyoruz.
+//basicProperties.ReplyTo = responseQueueName;
 
-for (int i = 0; i < 10; i++)
-{
-    byte[] message = Encoding.UTF8.GetBytes($"Mesaj Request-Response {i}");
-    channel.BasicPublish(
-        exchange: string.Empty,
-        routingKey: requestQueueName,
-        body: message,
-        basicProperties: basicProperties
-        );
-}
+//for (int i = 0; i < 10; i++)
+//{
+//    byte[] message = Encoding.UTF8.GetBytes($"Mesaj Request-Response {i}");
+//    channel.BasicPublish(
+//        exchange: string.Empty,
+//        routingKey: requestQueueName,
+//        body: message,
+//        basicProperties: basicProperties
+//        );
+//}
 
-#endregion
+//#endregion
 
-#region Response Kuyruğu Dinleme
-EventingBasicConsumer consumer = new(channel);
-channel.BasicConsume(
-    queue:responseQueueName,
-    autoAck: true,
-    consumer: consumer
-    );
+//#region Response Kuyruğu Dinleme
+//EventingBasicConsumer consumer = new(channel);
+//channel.BasicConsume(
+//    queue:responseQueueName,
+//    autoAck: true,
+//    consumer: consumer
+//    );
 
-consumer.Received += (sender, e) => 
-{
-    if (e.BasicProperties.CorrelationId == correlationId)
-    {
-        //....
-        Console.WriteLine($"Response: {Encoding.UTF8.GetString(e.Body.Span)}");
-    }
-};
-#endregion
+//consumer.Received += (sender, e) => 
+//{
+//    if (e.BasicProperties.CorrelationId == correlationId)
+//    {
+//        //....
+//        Console.WriteLine($"Response: {Encoding.UTF8.GetString(e.Body.Span)}");
+//    }
+//};
+//#endregion
 
 #endregion
 
