@@ -6,41 +6,120 @@ using System.Text;
 // Create Connection
 ConnectionFactory factory = new()
 {
-    Uri = new("amqps")
+    Uri = new("amqps://vjcgcjyw:P6xIHsPMCeaHQlssHGMswxD1nJSXfSHo@toad.rmq.cloudamqp.com/vjcgcjyw")
 };
 
-
-// Connection Activate and Open Channel
 using IConnection connection = factory.CreateConnection();
 using IModel channel = connection.CreateModel();
 
-channel.ExchangeDeclare(exchange: "header-exchange-edu", type: ExchangeType.Headers);
+#region P2P Tasarımı
 
-Console.Write("Header value değerini belirleniyiz: ");
-string headerValues = Console.ReadLine()!;
+//string queueName = "example-p2p-queue";
+//channel.QueueDeclare(queue: queueName, durable: false, exclusive: false, autoDelete: false);
 
-string queueName = channel.QueueDeclare().QueueName;
+//EventingBasicConsumer consumer = new(channel);
+//channel.BasicConsume(queue: queueName, autoAck: true, consumer);
+//consumer.Received += (sender, e) =>
+//{
+//    Console.WriteLine(Encoding.UTF8.GetString(e.Body.Span));
+//};
 
-// x-match default olarak any olarak belirlenir.
-var headers = new Dictionary<string, object>()
-{
-    //["x-match"] = "all",
-    ["no"] = headerValues,
-};
+#endregion
 
-channel.QueueBind(
-    queue: queueName,
-    exchange: "header-exchange-edu",
-    routingKey: string.Empty,
-    arguments: headers
-    );
+#region Pub/Sub Tasarımı
+//string exchangeName = "example-pub-sub";
+//channel.ExchangeDeclare(
+//    exchange: exchangeName,
+//    type: ExchangeType.Fanout,
+//    durable: false,
+//    autoDelete: false
+//    );
+
+//string queueName = channel.QueueDeclare().QueueName;
+//channel.QueueBind(
+//    queue: queueName,
+//    exchange: exchangeName,
+//    routingKey: string.Empty
+//    );
+
+//// isteğe bağlı ölçeklendirme ayarı
+////channel.BasicQos(
+////    prefetchCount: 1,
+////    prefetchSize: 0,
+////    global: false
+////    );
+
+//EventingBasicConsumer consumer = new(channel);
+//channel.BasicConsume(queue: queueName, autoAck: true, consumer);
+//consumer.Received += (sender, e) =>
+//{
+//    Console.WriteLine(Encoding.UTF8.GetString(e.Body.Span));
+//};
+
+#endregion
+
+#region Work Queue Tasarımı
+
+//string queueName = "example-work-queue";
+//channel.QueueDeclare(
+//    queue: queueName,
+//    durable: false,
+//    exclusive: false,
+//    autoDelete: false
+//    );
+
+//EventingBasicConsumer consumer = new(channel);
+
+//channel.BasicConsume(
+//    queue: queueName, 
+//    autoAck: true, // ya otomatik ya da manuel işlenmesi gerekiyor.
+//    consumer
+//    );
+
+//channel.BasicQos(
+//    prefetchCount: 1,
+//    prefetchSize: 0, // sınırsız
+//    global: false
+//    );
+
+
+//consumer.Received += (sender, e) =>
+//{
+//    Console.WriteLine(Encoding.UTF8.GetString(e.Body.Span));
+//};
+
+#endregion
+
+#region Request/Response Tasarımı
+string requestQueueName = "example-request-response";
+channel.QueueDeclare(queue: requestQueueName, durable: false, exclusive: false, autoDelete: false);
 
 EventingBasicConsumer consumer = new(channel);
-channel.BasicConsume(queue: queueName, autoAck: true, consumer: consumer);
+channel.BasicConsume(
+    queue: requestQueueName,
+    autoAck: true,
+    consumer: consumer
+    );
 
 consumer.Received += (sender, e) =>
 {
-    Console.WriteLine(Encoding.UTF8.GetString(e.Body.Span));
+    string receivedMessage = Encoding.UTF8.GetString(e.Body.Span);
+    Console.WriteLine(receivedMessage);
+    //....
+    
+    byte[] responseMessage = Encoding.UTF8.GetBytes($"İşlem tamamlandı.: {receivedMessage}");
+    IBasicProperties properties = channel.CreateBasicProperties();
+    properties.CorrelationId = e.BasicProperties.CorrelationId;
+    
+    channel.BasicPublish(
+        exchange: string.Empty,
+        routingKey: e.BasicProperties.ReplyTo,
+        body: responseMessage,
+        basicProperties: properties
+        );
+    
 };
 
-Console.Read();
+#endregion
+
+Console.ReadLine();
