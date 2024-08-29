@@ -68,3 +68,46 @@ Bu tasarımda, publisher tarafından yayınlanmış bir mesajın birden fazla co
 Bu tasarımda, publisher bir request yapar gibi kuyruğa mesaj gönderir ve bu mesajı tüketen consumer'dan sonuca dair başka kuyruktan bir yanıt/response bekler. Bu tarz senaryolar için oldukça uygun bir tasarımdır.
 
 ![reqres](https://github.com/user-attachments/assets/504f654e-4819-4ab6-bff2-560c63090892)
+
+
+## ESB (Enterprise Service Bus) Nedir?
+ESB, servisler arası entegrasyon sağlayan komponentlerin bütünüdür diyebiliriz. Yani, farklı yazılım sistemlerinin birbirleriyle iletişim kurmasını sağlamak için kullanılan bir yazılım mimarisi ve araç setidir.
+
+Burada şöyle bir örnek üzerinden devam edebiliriz. RabbitMQ farklı sistemler arasında bir iletişim modeli ortaya koymamızı sağlayan teknolojidir.
+ESB ise RabbitMQ gibi farklı sistemlerin birbirleriyle etkileşime girmesini sağlayan teknolojilerin kullanımını ve yönetilebilirliğini kolaylaştırmakta ve buna bir ortam sağlamaktadır.
+
+**ESB, servisler arası etkileşim süreçlerinde aracı uygulamalara karşın yüksek bir abstraction görevi görmekte ve böylece bütünsel olarak sistemin tek bir teknolojiye bağımlı olmasını engellemektedir. Bu da, bu gün RabbitMQ teknolojisi ile tasarlanan bir sistemin yarın ihtiyaç doğrultusunda Kafka vs. gibi farklı bir message broker'a geçişini kolaylaştırmaktadır.**
+
+### ESB'nin Temel Amacı Nedir?
+ESB'nin temel amacı, farklı yazılım uygulamalarının/servislerinin/sistemlerinin birbirleriyle kolayca iletişim kurabilmesini sağlamaktır.
+
+
+## MassTransit Nedir?
+.NET için geliştirilmiş olan, distributed uygulamaları rahatlıkla yönetmeyi ve çalıştırmayı amaçlayan, ücretsiz, open source bir Enterprise Service Bus framework'üdür. 
+
+Messaging tabanlı, gevşek bağlı(loosely coupled) ve asenkron olarak tasarlanmış dağınık sistemlerde yüksek dereceli kullanılabilirlik, güvenilirlik ve ölçeklenebilirlik sağlayabilmek için servisler oluşturmayı oldukça kolaylaştırmaktadır.
+
+MassTransit, tamamen farklı uygulamalar arasında **Message-Based Communication** yapabilmemizi sağlayan bir **Transport Gateway**'dir.
+Transport Gateway, farklı sistemler arasında farklı iletişim protokollerini kullanarak iletişim kurmayı sağlayan araçtır.
+Bu araç; iletişim protokollerindeki farklılıkları gizleyerek sistemlerin birbirleriyle sorunsuz bir şekilde çalışabilmesini sağlamaktadır.
+
+### Özellikleri
+- Open source ve ücretsizdir.
+- Kullanımı kolaydır.
+- Güçlü mesaj desenlerini(message pattern) destekler.
+- Distributed transaction sağlar.
+- Test edilebilirdir.
+- Monitoring özelliği mevcuttur.
+- Transport işlemlerinin kompleksliğini düşürür.
+- Multiple transport desteği sağlar.
+- Hata yönetimi sağlar.
+- Scheduling mevcuttur.
+- Request/Response pattern'larını destekler.
+- Message broker exchange'lerini yönetebilir.
+
+### MassTransit Kod Örneğinde;
+MassTransit'i kullanırken servisler arasında mesaj iletimini **Publish** ve **Send** olmak üzere iki farklı yolla gerçekleştirdik.
+
+- **Publish:** Event tabanlı mesaj iletim yöntemini ifade eder. Özünde publish/subscribe pattern'ını uygulamaktadır. Event publish edildiğinde, o event'e subscribe olan tüm queue'lara mesaj iletilecektir!
+
+- **Send:** Command tabanlı mesaj iletim yöntemini ifade eder. Hangi kuyruğa mesaj iletimi gerçekleştirilecekse endpoint olarak bildirilmesi gerekmektedir.
